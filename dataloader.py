@@ -26,7 +26,7 @@ random.seed(1)
 
 class FilePathDataset(torch.utils.data.Dataset):
     def __init__(self, dataset,
-                 token_maps="token_maps.pkl",
+                 symbols,
                  tokenizer="transfo-xl-wt103",
                  word_separator=3039, 
                  token_separator=" ", 
@@ -41,14 +41,12 @@ class FilePathDataset(torch.utils.data.Dataset):
         self.word_mask_prob = word_mask_prob
         self.phoneme_mask_prob = phoneme_mask_prob
         self.replace_prob = replace_prob
-        self.text_cleaner = TextCleaner()
+        self.text_cleaner = TextCleaner(symbols)
         
         self.word_separator = word_separator
         self.token_separator = token_separator
         self.token_mask = token_mask
         
-        with open(token_maps, 'rb') as handle:
-            self.token_maps = pickle.load(handle)     
             
     def __len__(self):
         return len(self.data)
@@ -104,7 +102,6 @@ class FilePathDataset(torch.utils.data.Dataset):
             
         phoneme = self.text_cleaner(phoneme)
         labels = self.text_cleaner(labels)
-        words = [self.token_maps[w]['token'] for w in words]
         
         assert len(phoneme) == len(words)
         assert len(phoneme) == len(labels)
